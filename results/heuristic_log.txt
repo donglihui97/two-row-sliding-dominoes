@@ -1,0 +1,9 @@
+== Label-erasure heuristic in the labeled chamber ==
+ k  metric  pairs      mean d   mean h   mean h/d  max d/h   h=d share
+ 2       U       306      4.76     1.59     0.501      7.0      0.353
+ 2       S       306      3.51     1.35     0.530      5.0      0.353
+ 3       U    517680     19.72     2.28     0.146     33.0      0.020
+ 3       S    517680     13.22     1.95     0.177     22.0      0.020
+ 4       U   1209576     36.80     3.50     0.101     57.0      0.001
+ 4       S   1209576     23.21     2.50     0.113     35.0      0.001
+done in 11.1 s

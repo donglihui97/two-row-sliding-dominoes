@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "two-row-sliding-dominoes: verification code for two-row sliding-domino puzzles"
+authors:
+  - family-names: Dong
+    given-names: Lihui
+  - family-names: Li
+    given-names: Zhuo
+license: MIT
+repository-code: "https://github.com/donglihui97/two-row-sliding-dominoes"
+preferred-citation:
+  type: article
+  title: "Reachability, exact diameters, and label-erasure heuristics in two-row sliding-domino puzzles"
+  authors:
+    - family-names: Dong
+      given-names: Lihui
+    - family-names: Li
+      given-names: Zhuo
+  journal: "ICGA Journal"
+  status: submitted

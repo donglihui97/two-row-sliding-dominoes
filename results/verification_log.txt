@@ -1,0 +1,55 @@
+== Two vacancies (Sections 4-7) ==
+ n  C_n  S_n  max|C|  diamU  diamS  diamF  pairs-checked
+ 1    1     1      1      0      0      0         1
+ 2    2     4      2      1      1      1         8
+ 3    4    11      4      2      2      2        33
+ 4    7    26      6      3      3      3       114
+ 5   13    56      9      4      4      4       310
+ 6   23   114     12      5      5      5       792
+ 7   41   223     16      6      6      6      1815
+ 8   72   424     20      7      7      7      4014
+ 9  126   789     25      8      8      8      8393
+10  219  1444     30      9      9      9     17132
+generating functions for C_n and S_n: OK
+== Arbitrary vacancy counts (Section 3, Theorems 3.4, 3.7, 3.8) ==
+ n  Q  N  D_U   QN  D_S  min(n-1,2N)  D_F   N
+ 2  1  1    1    1    1            1    1   1
+ 3  1  2    2    2    2            2    2   2
+ 3  2  1    2    2    2            2    1   1
+ 4  1  3    3    3    3            3    3   3
+ 4  2  2    4    4    3            3    2   2
+ 4  3  1    3    3    2            2    1   1
+ 5  1  4    4    4    4            4    4   4
+ 5  2  3    6    6    4            4    3   3
+ 5  3  2    6    6    4            4    2   2
+ 5  4  1    4    4    2            2    1   1
+ 6  1  5    5    5    5            5    5   5
+ 6  2  4    8    8    5            5    4   4
+ 6  3  3    9    9    5            5    3   3
+ 6  4  2    8    8    4            4    2   2
+ 6  5  1    5    5    2            2    1   1
+ 7  1  6    6    6    6            6    6   6
+ 7  2  5   10   10    6            6    5   5
+ 7  3  4   12   12    6            6    4   4
+ 7  4  3   12   12    6            6    3   3
+ 7  5  2   10   10    4            4    2   2
+ 7  6  1    6    6    2            2    1   1
+ 8  1  7    7    7    7            7    7   7
+ 8  2  6   12   12    7            7    6   6
+ 8  3  5   15   15    7            7    5   5
+ 8  4  4   16   16    7            7    4   4
+ 8  5  3   15   15    6            6    3   3
+ 8  6  2   12   12    4            4    2   2
+ 8  7  1    7    7    2            2    1   1
+component counts, chamber-signature invariant and exact diameters: OK
+four-vacancy example (2 horizontal dominoes on 2x4): 11 states, not a partial cube: OK
+tile-puzzle reduction, k=2: d_U = d_(2,1) and d_S = d_tile on aligned states (24 sources x 24 targets): OK
+tile-puzzle reduction, k=3: d_U = d_(2,1) and d_S = d_tile on aligned states (720 sources x 720 targets): OK
+tile-puzzle reduction, k=4: d_U = d_(2,1) and d_S = d_tile on aligned states (3 sources x 40320 targets): OK
+== Labeled chamber (Section 8) ==
+ k  states  comps  comp-size  Delta_U  Delta_S  Delta_F
+ 2      36     2        18        9        7        7   pair: d_U=7 d_S=5 (unlabeled distance 1)
+ 3    1440     2       720       33       23       23   pair: d_U=29 d_S=19 (unlabeled distance 1)
+ 4  100800     2     50400        -        -        -   pair: d_U=51 d_S=31 (unlabeled distance 1)
+mixed-rectangle example (2x15 board): 17 states, diameter 9 under U, S, F: OK
+all checks passed in 27.8 s
