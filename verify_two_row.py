@@ -1,5 +1,5 @@
 """Exhaustive verification of the closed forms in
-"Reachability, exact diameters, and label-erasure heuristics in two-row
+"Exact component diameters and weighted distances in two-row
 sliding-domino puzzles".
 
 The program enumerates every legal configuration for small boards, builds the
@@ -382,7 +382,7 @@ def check_two_vacancies(nmax, log):
 
 
 def check_general(nmax, log):
-    log("== Arbitrary vacancy counts (Section 3, Theorems 3.4, 3.7, 3.8) ==")
+    log("== Arbitrary vacancy counts (Section 3, Theorem 3.4, Corollary 3.9) ==")
     log(" n  Q  N  D_U   QN  D_S  min(n-1,2N)  D_F   N")
     rows = []
     for n in range(1, nmax + 1):
@@ -475,7 +475,7 @@ def check_labeled(kmax, log):
             assert 2 * k * (k - 1) <= DU and k * (k - 1) <= DS
         else:
             DU = DS = DF = None
-        # reflection pair of Section 10 (unlabeled endpoints adjacent)
+        # reflection pair of Section 10 (Corollary 8.6 lower bounds)
         dX, dY, dXu, dYu = distortion_pair(k, pz, states, idx, gU, gS)
         assert dX >= 2 * (k - 1) ** 2 and dY >= (k - 1) ** 2
         rows.append((k, len(states), len(comps), expect, DU, DS, DF, dX, dY))
@@ -524,7 +524,7 @@ def distortion_pair(k, pz, states, idx, gU, gS):
 
 def check_tile_reduction(kmax, log):
     """d_U on aligned states equals weighted (2,1) tile distance and
-    d_S equals unweighted tile distance (Theorem 6.1)."""
+    d_S equals unweighted tile distance (Theorem 8.1)."""
     import heapq
     for k in range(2, kmax + 1):
         pz, states = labeled_chamber(k)
@@ -582,30 +582,127 @@ def check_tile_reduction(kmax, log):
             f"({len(sources)} sources x {len(aligned)} targets): OK")
 
 
+def check_component_diameters(nmax, log):
+    """Theorem 3.8: every chamber-signature component has unit diameter
+    E*N + A, finger diameter A (E = 0) or N (E >= 1), and straight diameter
+    A (E = 0) or N + min(h, Q - 1) (E >= 1).  Corollary 6.2: a component with
+    E = 0 is a partial cube of isometric dimension A."""
+    log("== Diameters of individual components (Theorem 3.8, Corollary 6.2) ==")
+    ncomp = ncube = 0
+    for n in range(1, nmax + 1):
+        for v in range(0, n + 1):
+            for h in range(0, n + 1 - v):
+                Q = n - h - v
+                if Q < 1:
+                    continue
+                states = domino_states(n, h, v)
+                if not states:
+                    continue
+                pz = Puzzle(n, DOMINO, False)
+                g = {m: build_graph(pz, states, m) for m in 'USF'}
+                _, comps = components(g['U'])
+                N = h + v
+                for lst in comps:
+                    sig = signature(states[lst[0]])
+                    odd = [x % 2 for x in sig]
+                    E = Q - sum(odd)
+                    A = sum(o * x for o, x in zip(odd, sig))
+                    expect = {'U': E * N + A,
+                              'F': A if E == 0 else N,
+                              'S': A if E == 0 else N + min(h, Q - 1)}
+                    got = {m: diameters(g[m], [lst]) for m in 'USF'}
+                    assert got == expect, (n, h, v, Q, sig, got, expect)
+                    ncomp += 1
+                    if E == 0 and len(lst) > 1:
+                        ok, dim = is_partial_cube(g['U'], lst)
+                        assert ok and dim == A, (n, h, v, Q, sig, ok, dim)
+                        ncube += 1
+                    if (n, h, v, Q) == (9, 5, 1, 3):
+                        log(f"  Example 3.10: signature {sig}: D_U={got['U']}, D_S={got['S']}, D_F={got['F']}")
+                    if (n, h, v, Q) == (8, 4, 2, 2) and sig in ((1, 2, 1), (3, 0, 1)):
+                        log(f"  Example 6.3: signature {sig}: {len(lst)} states, unit diameter {got['U']}")
+    log(f"{ncomp} components with width {nmax} or less, {ncube} of them with E = 0 and at least two states: OK")
+    return ncomp, ncube
+
+
 def check_mixed_example(log):
-    # shapes: id -> (height, width); labeled pieces in Example 9.3
-    shape_of = {0: (1, 2), 1: (1, 4), 2: (1, 3), 3: (1, 3), 4: (2, 2),
-                5: (1, 6), 6: (1, 2), 7: (1, 2), 8: (1, 2)}
-    start = ((0, 0, 1), (1, 0, 3), (2, 1, 1), (3, 1, 4), (4, 0, 7),
-             (5, 0, 9), (6, 1, 9), (7, 1, 11), (8, 1, 13))
-    pz = Puzzle(15, shape_of, True)
+    """Theorem 9.2 and Example 9.3 on the 3 x 15 board: one separator of width
+    two, bars (2,4),(3,3),(6) on its left and (6),(2,2,2),(3,3) on its right,
+    one vacancy in each row of the first column."""
+    H, W = 3, 15
+    # pieces: (height, width); start positions (row, col), row 0 on top
+    shapes = [(1, 2), (1, 4), (1, 3), (1, 3), (1, 6), (3, 2),
+              (1, 6), (1, 2), (1, 2), (1, 2), (1, 3), (1, 3)]
+    start = ((0, 1), (0, 3), (1, 1), (1, 4), (2, 1), (0, 7),
+             (0, 9), (1, 9), (1, 11), (1, 13), (2, 9), (2, 12))
+
+    def legal(st):
+        occ = set()
+        for (hh, ww), (r, c) in zip(shapes, st):
+            if r < 0 or c < 0 or r + hh > H or c + ww > W:
+                return False
+            cells = {(r + i, c + j) for i in range(hh) for j in range(ww)}
+            if occ & cells:
+                return False
+            occ |= cells
+        return True
+
+    def unit_moves(st, i):
+        r, c = st[i]
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            t = list(st)
+            t[i] = (r + dr, c + dc)
+            t = tuple(t)
+            if legal(t):
+                yield t
+
+    def neighbors(st, mode):
+        out = set()
+        for i in range(len(shapes)):
+            if mode == 'U':
+                out.update(unit_moves(st, i))
+            elif mode == 'S':
+                r, c = st[i]
+                for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    step = 1
+                    while True:
+                        t = list(st)
+                        t[i] = (r + dr * step, c + dc * step)
+                        t = tuple(t)
+                        if not legal(t):
+                            break
+                        out.add(t)
+                        step += 1
+            else:
+                seen = {st}
+                dq = deque([st])
+                while dq:
+                    u = dq.popleft()
+                    for t in unit_moves(u, i):
+                        if t not in seen:
+                            seen.add(t)
+                            dq.append(t)
+                out.update(seen - {st})
+        return out
+
+    assert legal(start)
     for mode in 'USF':
         seen = {start}
         dq = deque([start])
         adj = {}
         while dq:
-            s = dq.popleft()
-            adj[s] = list(pz.neighbors(s, mode))
-            for t in adj[s]:
+            s0 = dq.popleft()
+            adj[s0] = list(neighbors(s0, mode))
+            for t in adj[s0]:
                 if t not in seen:
                     seen.add(t)
                     dq.append(t)
         nodes = list(seen)
-        ix = {s: i for i, s in enumerate(nodes)}
-        g = [[ix[t] for t in adj[s]] for s in nodes]
+        ix = {x: k for k, x in enumerate(nodes)}
+        g = [[ix[t] for t in adj[x]] for x in nodes]
         diam = diameters(g, [list(range(len(nodes)))])
-        assert len(nodes) == 17 and diam == 9, (mode, len(nodes), diam)
-    log("mixed-rectangle example (2x15 board): 17 states, diameter 9 under U, S, F: OK")
+        assert len(nodes) == 42 and diam == 12, (mode, len(nodes), diam)
+    log("three-row example (Theorem 9.2, Example 9.3, 3x15 board): 42 states, diameter 12 under U, S, F: OK")
 
 
 def unlabel(state):
@@ -660,6 +757,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--nmax-q1', type=int, default=10)
     ap.add_argument('--nmax-gen', type=int, default=8)
+    ap.add_argument('--nmax-comp', type=int, default=10)
     ap.add_argument('--kmax-lab', type=int, default=4)
     ap.add_argument('--out', default='verification_log.txt')
     ap.add_argument('--heuristic-only', action='store_true')
@@ -680,6 +778,7 @@ def main():
         return
     check_two_vacancies(args.nmax_q1, log)
     check_general(args.nmax_gen, log)
+    check_component_diameters(args.nmax_comp, log)
     check_four_vacancy_example(log)
     check_tile_reduction(min(args.kmax_lab, 4), log)
     check_labeled(args.kmax_lab, log)

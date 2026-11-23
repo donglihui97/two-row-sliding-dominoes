@@ -10,11 +10,11 @@ license: MIT
 repository-code: "https://github.com/donglihui97/two-row-sliding-dominoes"
 preferred-citation:
   type: article
-  title: "Reachability, exact diameters, and label-erasure heuristics in two-row sliding-domino puzzles"
+  title: "Exact component diameters and weighted distances in two-row sliding-domino puzzles"
   authors:
     - family-names: Dong
       given-names: Lihui
     - family-names: Li
       given-names: Zhuo
-  journal: "ICGA Journal"
+  journal: "Discrete Applied Mathematics"
   status: submitted
